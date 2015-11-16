@@ -1,7 +1,11 @@
 package Main;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,6 +13,9 @@ import java.util.Map;
 
 import org.graphstream.graph.*;
 import org.graphstream.graph.implementations.SingleGraph;
+import org.graphstream.ui.view.Viewer;
+import org.graphstream.ui.view.ViewerListener;
+import org.graphstream.ui.view.ViewerPipe;
 /*
  * Extraction de tout les noms de classes via la doc JDK (http://hg.openjdk.java.net/jdk8u/jdk8u/jdk/file/5910b94ea083/src/share/classes/java/util/)
  * puis en insérant JQuery dans la page afin de pouvoir faire un ('td.filename').text() en JavaScript 
@@ -23,7 +30,7 @@ import org.graphstream.graph.implementations.SingleGraph;
  * Creation des 3 fichiers de sorties
  * 
  */
-public class Main {
+public class Main implements ViewerListener  {
  
         /**
          * @param args
@@ -170,79 +177,18 @@ public class Main {
                 
                 createLinks(bonnesClasses, map);
                 //Creation du graphe pour l'affichage
-                Graph graph = new SingleGraph("Tutorial 1");
                 
-                //Ajout des 3 types de Nodes.
-                System.out.println("Classes concretes ("+concret.size() + "): ");
-                for (String s : concret) {
-                	System.out.println(s);
-                	Node n = graph.addNode(s);
-                	n.setAttribute("ui.label", s);
-                	//Vert = Concret
-                	n.addAttribute("ui.style",  "fill-color: rgb(102,255,153);");
-                }
-                System.out.println("\nClasses Abstraites ("+abstracts.size()+"): ");
-                for (String s : abstracts) {
-                	System.out.println(s);
-                	Node n = graph.addNode(s);
-                	n.setAttribute("ui.label", s);
-                	//Bleu = Abstrait
-                	n.addAttribute("ui.style",  "fill-color: rgb(51,0,153);");
-                }
-                System.out.println("\nInterfaces ("+interfaces.size()+"): ");
-                for (String s : interfaces) {
-                	System.out.println(s);
-                	Node n = graph.addNode(s);
-                	n.setAttribute("ui.label", s);
-                	//Jaune = Interface
-                	n.addAttribute("ui.style",  "fill-color: rgb(204,204,51);");
-                }
-                
-                //Ajout des edges
-                for (String s : bonnesClasses) {
-                	
-                	ArrayList<String> interfacesDeS = map.get(s).getInterfaces();
-                	for (String ii : interfacesDeS) {
-                		if (bonnesClasses.contains(ii)) {
-                			graph.addEdge(s+ii, ii, s);
-                		} else {
-                			Node test = graph.getNode(ii);
-                			//Si le noeud n'existe pas, on l'ajoute
-                			if (test == null) {
-                				Node n = graph.addNode(ii);
-                    			n.setAttribute("ui.label", ii);
-                            	//Jaune = Interface
-                            	n.addAttribute("ui.style",  "fill-color: rgb(204,204,51);");
-                			}
-                        	graph.addEdge(s+ii, ii, s);
-                		}
-                	}
-                	
-                	ArrayList<String> heritageDeS = map.get(s).getHeritages();
-                	for (String ii : heritageDeS) {
-                		if (bonnesClasses.contains(ii)) {
-                			graph.addEdge(s+ii, ii, s);
-                		} else {
-                			Node test = graph.getNode(ii);
-                			//Si le noeud n'existe pas, on l'ajoute
-                			if (test == null) {
-	                			Node n = graph.addNode(ii);
-	                			n.setAttribute("ui.label", ii);
-	                        	//Bleu = Abstrait
-	                			n.addAttribute("ui.style",  "fill-color: rgb(51,0,153);");
-                			}
-                        	
-                        	graph.addEdge(s+ii, ii, s);
-                		}
-                		
-                	}
-                }
-                
-                graph.display();
-                
-                File f = new File("ClassesConcretes.txt");
-                File f2 = new File("ClassesAbstraites.txt");
-                File f3 = new File("Interfaces.txt");
+                File f = new File(System.getProperty("user.dir"), "ClassesConcretes.txt");
+                File f2 = new File(System.getProperty("user.dir"), "ClassesAbstraites.txt");
+                File f3 = new File(System.getProperty("user.dir"), "Interfaces.txt");
+                try {
+					f.createNewFile();
+					f2.createNewFile();
+					f3.createNewFile();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
                 
                 try {
 					FileWriter fw = new FileWriter(f);
@@ -282,6 +228,12 @@ public class Main {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
+               
+                MonGraph graph = new MonGraph("Extraction Package Util", concret, abstracts, interfaces, bonnesClasses, map);
+                               
+               
+                
+                
             
         }
         
@@ -379,6 +331,22 @@ public class Main {
                 }
                 return false;
         }
-        
-        
+
+		@Override
+		public void buttonPushed(String arg0) {
+			// TODO Auto-generated method stub
+			System.out.println("Node : " + arg0);
+		}
+
+		@Override
+		public void buttonReleased(String arg0) {
+			// TODO Auto-generated method stub
+			
+		}
+
+		@Override
+		public void viewClosed(String arg0) {
+			// TODO Auto-generated method stub
+			
+		}        
 }

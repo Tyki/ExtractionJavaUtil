@@ -32,4 +32,8 @@ public class Relations {
 	public ArrayList<String> getHeritages() {
 		return this.heritages;
 	}
+	
+	public String getNom() {
+		return this.Nom;
+	}
 }
